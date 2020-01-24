@@ -15,11 +15,9 @@
 		<c:out value='${sessionScope["loggedUser"].getLogin()}' />
 	</h2>
 
-	<p>
-	<% if ( request.getAttribute("message") != null ) { %>
-		<%=request.getAttribute( "message" )%>
-	<% } %>
-	<p>
+	<c:if test="${requestScope.message != null}">
+		<p><c:out value="${requestScope.message}" /></p>
+	</c:if>
 
 	<table>
 		<tr>
