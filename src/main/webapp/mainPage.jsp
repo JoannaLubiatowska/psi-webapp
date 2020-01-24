@@ -14,12 +14,11 @@
 		<c:out value='sessionScope["loggedUser"].getFullName()' />
 	</h2>
 
-	<c:set var="message" scope="session" value='${requestScope["message"]}' />
-	<c:if test="message != null">
-		<p>
-			<c:out value="${message}" />
-		</p>
-	</c:if>
+	<p>
+	<% if ( request.getAttribute("message") != null ) { %>
+		<%=request.getAttribute( "message" )%>
+	<% } %>
+	<p>
 
 	<table>
 		<tr>

@@ -11,12 +11,11 @@
 <body>
 	<h2>Zaloguj się</h2>
 
-	<c:set var="message" scope="session" value='${requestScope["message"]}' />
-	<c:if test="message != null">
-		<p>
-			<c:out value="${message}" />
-		</p>
-	</c:if>
+	<p>
+	<% if ( request.getAttribute("message") != null ) { %>
+		<%=request.getAttribute( "message" )%>
+	<% } %>
+	<p>
 
 	<form action="login" method="post">
 		<table>
