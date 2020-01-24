@@ -3,7 +3,10 @@ package psi.webapp.entity;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import psi.webapp.user.UserNotFoundException;
 
 public class AppDatabase {
 
@@ -13,6 +16,7 @@ public class AppDatabase {
 	private static final String DRIVER = "oracle.jdbc.driver.OracleDriver";
 
 	private static final String INSERT_USER_QUERY = "INSERT INTO USERS(login, password) VALUES (?, ?)";
+	private static final String SELECT_USER_BY_CREDENTIALS = "SELECT u.id, u.login FROM USERS u WHERE u.login = ? AND u.password = ?";
 
 	private static AppDatabase instance;
 
@@ -35,6 +39,29 @@ public class AppDatabase {
 			statement.setString(2, user.getPassword());
 			statement.executeUpdate();
 		}
+	}
+
+	public User getUserByCredentials(String login, String password)
+			throws UserNotFoundException, SQLException, ClassNotFoundException {
+		User loggedUser = null;
+
+		Class.forName(DRIVER);
+		try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+				PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_CREDENTIALS);) {
+			statement.setString(1, login);
+			statement.setString(2, password);
+			ResultSet rs = statement.executeQuery();
+			while (rs.next()) {
+				if (loggedUser != null) {
+					throw new IllegalStateException("Credentials passed for more than one user.");
+				}
+				loggedUser = User.builder().id(rs.getLong("id")).login(rs.getString("login")).build();
+			}
+		}
+		if (loggedUser == null) {
+			throw new UserNotFoundException();
+		}
+		return loggedUser;
 	}
 
 }

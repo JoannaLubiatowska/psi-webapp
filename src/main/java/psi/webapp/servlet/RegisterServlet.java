@@ -8,23 +8,23 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import psi.webapp.register.RegisterService;
-import psi.webapp.register.RegisterUserException;
-import psi.webapp.register.RegistrationFormData;
+import psi.webapp.user.RegisterUserException;
+import psi.webapp.user.RegistrationFormData;
+import psi.webapp.user.UserService;
 
 @WebServlet({ "/register" })
 public class RegisterServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -5430285426354417271L;
 
-	private final RegisterService registerService = RegisterService.getInstance();
+	private final UserService userService = UserService.getInstance();
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		try {
 			RegistrationFormData formData = fillFormData(request);
-			registerService.register(formData);
+			userService.registerNewUser(formData);
 			request.setAttribute("message", "Nowy użytkownik został zarejestrowany. Teraz można się zalogować.");
 			getServletContext().getRequestDispatcher("/index.jsp").forward(request, response);
 		} catch (RegisterUserException e) {

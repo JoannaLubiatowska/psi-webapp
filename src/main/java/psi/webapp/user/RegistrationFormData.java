@@ -1,4 +1,4 @@
-package psi.webapp.register;
+package psi.webapp.user;
 
 import lombok.Builder;
 import lombok.Data;

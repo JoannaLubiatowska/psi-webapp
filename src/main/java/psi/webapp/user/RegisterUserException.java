@@ -1,4 +1,4 @@
-package psi.webapp.register;
+package psi.webapp.user;
 
 public class RegisterUserException extends Exception {
 
