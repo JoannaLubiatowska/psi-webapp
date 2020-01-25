@@ -17,10 +17,9 @@ public class AppDatabase {
 	private static final String DRIVER = "oracle.jdbc.driver.OracleDriver";
 
 	private static final String INSERT_USER_QUERY = "INSERT INTO USERS(login, password) VALUES (?, ?)";
-	private static final String SELECT_USER_BY_CREDENTIALS = "SELECT u.id, u.login FROM USERS u WHERE u.login = ? AND u.password = ?";
 	private static final String SELECT_USER_BY_ID = "SELECT u.id, u.login FROM USERS u WHERE u.id = ?";
-	private static final String UPDATE_USER_QUERY = "UPDATE USERS SET login = ?, password = ? WHERE id = ?";
-	private static final String SELECT_USER_BY_LOGIN = "SELECT u.id, u.login FROM USERS u WHERE u.login = ?";
+	private static final String UPDATE_USER_QUERY = "UPDATE USERS SET login = ?, password = ?, correct = ?, incorrect = ? WHERE id = ?";
+	private static final String SELECT_USER_BY_LOGIN = "SELECT u.id, u.login, u.password, u.correct, u.incorrect FROM USERS u WHERE u.login = ?";
 	private static final String SELECT_USER_BY_ID_AND_PASSWORD = "SELECT u.id, u.login FROM USERS u WHERE u.id = ? AND u.password = ?";
 	private static final String SELECT_USER_PASSWORD_USAGE = "SELECT MAX(up.pass_no) as pass_no, NEXT_USER_PASSWORD_ID(?) - 1 as current_pass_no FROM USER_PASSWORDS up WHERE up.user_id = ? AND up.password = ?";
 
@@ -53,20 +52,26 @@ public class AppDatabase {
 
 		Class.forName(DRIVER);
 		try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-				PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_CREDENTIALS);) {
+				PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_LOGIN);) {
 			statement.setString(1, login);
-			statement.setString(2, password);
 			ResultSet rs = statement.executeQuery();
 			while (rs.next()) {
 				if (loggedUser != null) {
-					throw new IllegalStateException("Credentials passed for more than one user.");
+					throw new IllegalStateException("Login passed for more than one user.");
 				}
-				loggedUser = User.builder().id(rs.getLong("id")).login(rs.getString("login")).build();
+				loggedUser = User.builder().id(rs.getLong("id")).login(rs.getString("login")).password(rs.getString("password")).correct(rs.getLong("correct")).incorrect(rs.getLong("incorrect")).build();
 			}
 		}
 		if (loggedUser == null) {
 			throw new UserNotFoundException();
 		}
+		if (!loggedUser.getPassword().equals(password)) {
+			loggedUser.setIncorrect(loggedUser.getIncorrect() + 1);
+			update(loggedUser);
+			throw new UserNotFoundException();
+		}
+		loggedUser.setCorrect(loggedUser.getCorrect() + 1);
+		update(loggedUser);
 		return loggedUser;
 	}
 
@@ -98,7 +103,9 @@ public class AppDatabase {
 				PreparedStatement statement = connection.prepareStatement(UPDATE_USER_QUERY);) {
 			statement.setString(1, user.getLogin());
 			statement.setString(2, user.getPassword());
-			statement.setLong(3, user.getId());
+			statement.setLong(3, user.getCorrect());
+			statement.setLong(4, user.getIncorrect());
+			statement.setLong(5, user.getId());
 			statement.executeUpdate();
 		}
 	}

@@ -18,6 +18,9 @@
 	<c:if test="${requestScope.message != null}">
 		<p><c:out value="${requestScope.message}" escapeXml="false" /></p>
 	</c:if>
+	
+	<p>Poprawnych logowań: <c:out value="${sessionScope.loggedUser.getCorrect()}" /></p>
+	<p>Niepoprawnych logowań: <c:out value="${sessionScope.loggedUser.getIncorrect()}" /></p>
 
 	<table>
 		<tr>
