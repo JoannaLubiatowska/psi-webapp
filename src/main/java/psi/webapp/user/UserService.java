@@ -26,7 +26,7 @@ public class UserService {
 	}
 
 	public void registerNewUser(RegistrationFormData formData) throws RegisterUserException {
-		String validationMessages = Validators.getGetRegistrationValidators().stream()
+		String validationMessages = Validators.getRegistrationValidators().stream()
 				.map(validator -> validator.validate(formData)).filter(validResult -> !validResult.isCorrect())
 				.map(ValidationResult::getDescription).collect(Collectors.joining("<br>"));
 		
@@ -52,7 +52,15 @@ public class UserService {
 	}
 
 	public void changeUserPassword(ChangePasswordFormData formData)
-			throws ClassNotFoundException, UserNotFoundException, SQLException {
+			throws ClassNotFoundException, UserNotFoundException, SQLException, ChangePasswordException {
+		String validationMessages = Validators.getChangePasswordValidators().stream()
+				.map(validator -> validator.validate(formData)).filter(validResult -> !validResult.isCorrect())
+				.map(ValidationResult::getDescription).collect(Collectors.joining("<br>"));
+		
+		if (validationMessages != null && !validationMessages.isEmpty()) {
+			throw new ChangePasswordException(validationMessages);
+		}
+		
 		User user = database.getUserById(formData.getUserId());
 		user.setPassword(StringUtils.encrypt(formData.getNewPassword()));
 		database.update(user);
