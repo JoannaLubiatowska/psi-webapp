@@ -39,4 +39,10 @@ public class UserService {
 			throw new UserNotFoundException(e);
 		}
 	}
+
+	public void changeUserPassword(ChangePasswordFormData formData) throws ClassNotFoundException, UserNotFoundException, SQLException {
+		User user = database.getUserById(formData.getUserId());
+		user.setPassword(StringUtils.encrypt(formData.getNewPassword()));
+		database.update(user);
+	}
 }

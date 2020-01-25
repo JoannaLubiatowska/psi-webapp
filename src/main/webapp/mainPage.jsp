@@ -21,7 +21,7 @@
 
 	<table>
 		<tr>
-			<th><a href="changePass">Zmień hasło</a></th>
+			<th><a href="changePass.jsp">Zmień hasło</a></th>
 		</tr>
 		<tr>
 			<th><a href="logout">Wyloguj</a></th>

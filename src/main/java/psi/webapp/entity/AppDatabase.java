@@ -17,6 +17,8 @@ public class AppDatabase {
 
 	private static final String INSERT_USER_QUERY = "INSERT INTO USERS(login, password) VALUES (?, ?)";
 	private static final String SELECT_USER_BY_CREDENTIALS = "SELECT u.id, u.login FROM USERS u WHERE u.login = ? AND u.password = ?";
+	private static final String SELECT_USER_BY_ID = "SELECT u.id, u.login FROM USERS u WHERE u.id = ?";
+	private static final String UPDATE_USER_QUERY = "UPDATE USERS SET login = ?, password = ? WHERE id = ?";
 
 	private static AppDatabase instance;
 
@@ -62,6 +64,39 @@ public class AppDatabase {
 			throw new UserNotFoundException();
 		}
 		return loggedUser;
+	}
+
+	public User getUserById(Long userId)
+			throws UserNotFoundException, SQLException, ClassNotFoundException {
+		User findedUser = null;
+
+		Class.forName(DRIVER);
+		try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+				PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_ID);) {
+			statement.setLong(1, userId);
+			ResultSet rs = statement.executeQuery();
+			while (rs.next()) {
+				if (findedUser != null) {
+					throw new IllegalStateException("Credentials passed for more than one user.");
+				}
+				findedUser = User.builder().id(rs.getLong("id")).login(rs.getString("login")).build();
+			}
+		}
+		if (findedUser == null) {
+			throw new UserNotFoundException();
+		}
+		return findedUser;
+	}
+
+	public void update(User user) throws SQLException, ClassNotFoundException {
+		Class.forName(DRIVER);
+		try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+				PreparedStatement statement = connection.prepareStatement(UPDATE_USER_QUERY);) {
+			statement.setString(1, user.getLogin());
+			statement.setString(2, user.getPassword());
+			statement.setLong(3, user.getId());
+			statement.executeUpdate();
+		}
 	}
 
 }
