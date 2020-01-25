@@ -19,6 +19,7 @@ public class AppDatabase {
 	private static final String SELECT_USER_BY_CREDENTIALS = "SELECT u.id, u.login FROM USERS u WHERE u.login = ? AND u.password = ?";
 	private static final String SELECT_USER_BY_ID = "SELECT u.id, u.login FROM USERS u WHERE u.id = ?";
 	private static final String UPDATE_USER_QUERY = "UPDATE USERS SET login = ?, password = ? WHERE id = ?";
+	private static final String SELECT_USER_BY_LOGIN = "SELECT u.id, u.login FROM USERS u WHERE u.login = ?";
 
 	private static AppDatabase instance;
 
@@ -97,6 +98,19 @@ public class AppDatabase {
 			statement.setLong(3, user.getId());
 			statement.executeUpdate();
 		}
+	}
+
+	public boolean isUserWithLogin(String login) throws ClassNotFoundException, SQLException {
+		Class.forName(DRIVER);
+		try (Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+				PreparedStatement statement = connection.prepareStatement(SELECT_USER_BY_LOGIN);) {
+			statement.setString(1, login);
+			ResultSet rs = statement.executeQuery();
+			while (rs.next()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

@@ -12,8 +12,8 @@
 <body>
 	<h2>Zarejestruj się</h2>
 
-	<c:if test="${request.message != null}">
-		<p><c:out value="${request.message}" /></p>
+	<c:if test="${requestScope.message != null}">
+		<p><c:out value="${requestScope.message}" escapeXml="false" /></p>
 	</c:if>
 
 	<form action="register" method="post">

@@ -16,7 +16,7 @@
 	</h2>
 
 	<c:if test="${requestScope.message != null}">
-		<p><c:out value="${requestScope.message}" /></p>
+		<p><c:out value="${requestScope.message}" escapeXml="false" /></p>
 	</c:if>
 
 	<table>

@@ -1,10 +1,13 @@
 package psi.webapp.user;
 
 import java.sql.SQLException;
+import java.util.stream.Collectors;
 
 import psi.webapp.StringUtils;
 import psi.webapp.entity.AppDatabase;
 import psi.webapp.entity.User;
+import psi.webapp.validator.ValidationResult;
+import psi.webapp.validator.Validators;
 
 public class UserService {
 
@@ -23,6 +26,14 @@ public class UserService {
 	}
 
 	public void registerNewUser(RegistrationFormData formData) throws RegisterUserException {
+		String validationMessages = Validators.getGetRegistrationValidators().stream()
+				.map(validator -> validator.validate(formData)).filter(validResult -> !validResult.isCorrect())
+				.map(ValidationResult::getDescription).collect(Collectors.joining("<br>"));
+		
+		if (validationMessages != null && !validationMessages.isEmpty()) {
+			throw new RegisterUserException(validationMessages);
+		}
+
 		User user = User.builder().login(formData.getLogin()).password(StringUtils.encrypt(formData.getPassword()))
 				.build();
 		try {
@@ -40,7 +51,8 @@ public class UserService {
 		}
 	}
 
-	public void changeUserPassword(ChangePasswordFormData formData) throws ClassNotFoundException, UserNotFoundException, SQLException {
+	public void changeUserPassword(ChangePasswordFormData formData)
+			throws ClassNotFoundException, UserNotFoundException, SQLException {
 		User user = database.getUserById(formData.getUserId());
 		user.setPassword(StringUtils.encrypt(formData.getNewPassword()));
 		database.update(user);
